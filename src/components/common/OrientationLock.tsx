@@ -1,15 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Smartphone, Info, Circle, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { Smartphone, Info, Circle, CheckCircle2, AlertCircle, Clock, RotateCcw } from 'lucide-react';
 import { isMobileDevice, isLandscape as checkIsLandscape } from '../../lib/deviceHelper';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 
 export function OrientationLock({ children }: { children: React.ReactNode }) {
-  const [showHelpPage, setShowHelpPage] = useState(false);
+  const { setShowOnboarding, isFirstTime } = useOnboarding();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [wasLandscape, setWasLandscape] = useState(false);
 
   useEffect(() => {
     const checkOrientation = () => {
       const isMobile = isMobileDevice();
       const isLandscapeMode = checkIsLandscape();
-      setShowHelpPage(isMobile && isLandscapeMode);
+
+      // Only show confirmation for non-first-time users when they rotate to landscape
+      if (isMobile && isLandscapeMode && !wasLandscape && !isFirstTime) {
+        setShowConfirmDialog(true);
+      } else if (!isLandscapeMode) {
+        setShowConfirmDialog(false);
+      }
+
+      setWasLandscape(isLandscapeMode);
     };
 
     checkOrientation();
@@ -20,9 +31,58 @@ export function OrientationLock({ children }: { children: React.ReactNode }) {
       window.removeEventListener('resize', checkOrientation);
       window.removeEventListener('orientationchange', checkOrientation);
     };
-  }, []);
+  }, [wasLandscape, isFirstTime]);
 
-  if (showHelpPage) {
+  const handleEnterGuide = () => {
+    setShowConfirmDialog(false);
+    setShowOnboarding(true);
+  };
+
+  const handleDismiss = () => {
+    setShowConfirmDialog(false);
+  };
+
+  if (showConfirmDialog) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-6 animate-fadeIn">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full animate-scaleIn">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+            <RotateCcw className="w-10 h-10 text-white" />
+          </div>
+
+          <h2 className="text-2xl font-bold text-gray-900 mb-3 text-center">
+            Beginner Guide Mode
+          </h2>
+
+          <p className="text-gray-600 mb-6 text-center leading-relaxed">
+            Would you like to enter the beginner guide to learn about KUKI features and the status rings system?
+          </p>
+
+          <div className="space-y-3">
+            <button
+              onClick={handleEnterGuide}
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Yes, Show Me the Guide
+            </button>
+            <button
+              onClick={handleDismiss}
+              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 px-6 rounded-xl font-medium transition-colors"
+            >
+              No, Thanks
+            </button>
+          </div>
+
+          <p className="text-xs text-gray-500 text-center mt-4">
+            You can access this guide anytime from your profile settings
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // This help page is now removed - OrientationLock only shows confirmation
+  if (false) {
     return (
       <div className="fixed inset-0 bg-gradient-to-br from-blue-600 via-cyan-500 to-blue-700 flex items-center justify-center p-4 overflow-y-auto overflow-x-hidden">
         <div className="max-w-4xl w-full bg-white rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 animate-scaleIn my-4">

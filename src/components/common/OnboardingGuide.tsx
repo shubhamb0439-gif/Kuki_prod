@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ChevronRight, ChevronLeft, RotateCcw } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -8,7 +8,6 @@ export function OnboardingGuide() {
   const { t } = useLanguage();
   const [isLandscape, setIsLandscape] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const [showRotatePrompt, setShowRotatePrompt] = useState(true);
 
   useEffect(() => {
     const checkOrientation = () => {
@@ -21,14 +20,6 @@ export function OnboardingGuide() {
   }, []);
 
   if (!showOnboarding) return null;
-
-  const handleSkip = () => {
-    completeOnboarding();
-  };
-
-  const handleContinue = () => {
-    setShowRotatePrompt(false);
-  };
 
   const guidePages = [
     {
@@ -92,38 +83,6 @@ export function OnboardingGuide() {
       ]
     }
   ];
-
-  if (showRotatePrompt && !isLandscape) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl p-8 max-w-md text-center">
-          <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-            <RotateCcw className="w-10 h-10 text-blue-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            {t('rotate_your_screen')}
-          </h2>
-          <p className="text-gray-600 mb-8">
-            For the best experience viewing the beginner's guide, please rotate your device to landscape mode.
-          </p>
-          <div className="space-y-3">
-            <button
-              onClick={handleContinue}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-lg font-medium transition-colors"
-            >
-              Continue to Guide
-            </button>
-            <button
-              onClick={handleSkip}
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-6 rounded-lg font-medium transition-colors"
-            >
-              Skip Guide
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-95 z-50 overflow-auto">

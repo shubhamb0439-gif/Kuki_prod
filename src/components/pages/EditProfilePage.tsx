@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Camera, LogOut, Save, X, Briefcase, Eye, EyeOff } from 'lucide-react';
+import { Camera, LogOut, Save, X, Briefcase, Eye, EyeOff, BookOpen } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 import { supabase } from '../../lib/supabase';
 import { Header } from '../common/Header';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
@@ -45,6 +46,7 @@ interface EditProfilePageProps {
 export function EditProfilePage({ onReferFriend, onMessages }: EditProfilePageProps) {
   const { user, signOut, refreshUser } = useAuth();
   const { t } = useLanguage();
+  const { setShowOnboarding } = useOnboarding();
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState('');
@@ -345,6 +347,15 @@ export function EditProfilePage({ onReferFriend, onMessages }: EditProfilePagePr
             >
               <Save className="w-5 h-5" />
               <span>{isSaving ? t('common.loading') : t('profile.save')}</span>
+            </button>
+
+            {/* Beginner Guide Button */}
+            <button
+              onClick={() => setShowOnboarding(true)}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+            >
+              <BookOpen className="w-5 h-5" />
+              <span>View Beginner Guide</span>
             </button>
 
             {/* Logout Button */}
