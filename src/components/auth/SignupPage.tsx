@@ -135,7 +135,7 @@ export function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-emerald-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-emerald-50 flex items-center justify-center p-4 animate-fadeIn">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
@@ -331,7 +331,7 @@ export function SignupPage({ onSwitchToLogin }: SignupPageProps) {
           <div className="mt-8 pt-6 border-t border-gray-200 text-center">
             <p className="text-gray-600 mb-4">Already have an account?</p>
             <button
-              onClick={onSwitchToLogin}
+              onClick={() => onSwitchToLogin()}
               className="text-blue-500 hover:text-blue-600 font-medium"
             >
               Back to Login

@@ -81,15 +81,12 @@ export function LoginPage({ onSwitchToSignup, showSuccess = false }: LoginPagePr
       // Sign in successful - let the auth state change handle the rest
     } catch (err: any) {
       setError(err.message);
-      if (err.message.includes('Unknown') || err.message.includes('Invalid')) {
-        setTimeout(() => onSwitchToSignup(), 2000);
-      }
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-emerald-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-emerald-50 flex items-center justify-center p-4 animate-fadeIn">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {displaySuccess && (
