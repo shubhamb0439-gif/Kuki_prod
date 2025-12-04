@@ -18,6 +18,7 @@ export function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [detectedCurrency, setDetectedCurrency] = useState('USD');
@@ -129,8 +130,11 @@ export function SignupPage({ onSwitchToLogin }: SignupPageProps) {
 
       await supabase.auth.signOut({ scope: 'local' });
       setLoading(false);
+      setIsTransitioning(true);
 
-      onSwitchToLogin(true);
+      setTimeout(() => {
+        onSwitchToLogin(true);
+      }, 50);
     } catch (err: any) {
       console.error('Signup error:', err);
       setError(err.message || 'An error occurred during signup');
@@ -139,7 +143,7 @@ export function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-emerald-50 flex items-center justify-center p-4 animate-fadeIn relative">
+    <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-emerald-50 flex items-center justify-center p-4 animate-fadeIn relative transition-all duration-300 ${isTransitioning ? 'blur-md' : ''}`}>
       {loading && !error && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-8 flex flex-col items-center">
