@@ -36,6 +36,8 @@ export function EmployeeHome({ onReferFriend, onMessages }: EmployeeHomeProps) {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [employeeStatus, setEmployeeStatus] = useState<{showRing: boolean; color: string; text: string}>({ showRing: false, color: '', text: '' });
   const [employeeRating, setEmployeeRating] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   const handleMessages = () => {
     window.location.hash = '#/messages';
@@ -57,12 +59,18 @@ export function EmployeeHome({ onReferFriend, onMessages }: EmployeeHomeProps) {
 
   useEffect(() => {
     if (user) {
-      checkLinkedEmployer();
+      Promise.all([
+        checkLinkedEmployer(),
+        fetchUnreadMessages(),
+        loadEmployeeStatus()
+      ]).then(() => {
+        setIsLoading(false);
+        setInitialLoadComplete(true);
+      });
+
       subscribeToEmployerConnection();
       subscribeToJobPostings();
       subscribeToJobApplications();
-      fetchUnreadMessages();
-      loadEmployeeStatus();
     }
   }, [user]);
 
@@ -155,8 +163,8 @@ export function EmployeeHome({ onReferFriend, onMessages }: EmployeeHomeProps) {
 
     if (data && data.length > 0) {
       const employers = data
-        .filter(item => item.employer)
-        .map(item => ({
+        .filter((item: any) => item.employer)
+        .map((item: any) => ({
           id: item.employer_id,
           name: item.employer.name,
           email: item.employer.email,
@@ -730,6 +738,16 @@ Your contract wage has been paid successfully.
         unreadCount={unreadMessages}
       />
 
+      {/* Loading Overlay with Blur Effect */}
+      {isLoading && !initialLoadComplete && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-white/80 backdrop-blur-sm" style={{ paddingTop: 'calc(67px + env(safe-area-inset-top))' }}>
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-gray-600 font-medium">Loading...</p>
+          </div>
+        </div>
+      )}
+
       {showScanner && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full">
@@ -800,7 +818,7 @@ Your contract wage has been paid successfully.
         </div>
       )}
 
-      <div className="max-w-md mx-auto bg-white pb-24 overflow-y-auto" style={{ paddingTop: 'calc(75px + env(safe-area-inset-top))', minHeight: '100vh' }}>
+      <div className={`max-w-md mx-auto bg-white pb-24 overflow-y-auto transition-all duration-300 ${isLoading && !initialLoadComplete ? 'blur-sm' : 'blur-0'}`} style={{ paddingTop: 'calc(67px + env(safe-area-inset-top))', minHeight: '100vh' }}>
         {/* Profile Header */}
         <div className="bg-blue-600 text-white px-4 py-6 relative overflow-hidden bg-cover bg-center shadow-lg -mt-[calc(env(safe-area-inset-top))]" style={{ backgroundImage: 'url(/waves 4.png)', paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
           <div className="relative z-10">

@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { CreditCard as Edit, CreditCard, Plus, QrCode, Users, DollarSign, CheckCircle } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { CreditCard as Edit, Plus, QrCode, Users, DollarSign, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Employee } from '../../types/auth';
 import { Header } from '../common/Header';
 import { ProfileWithStatusRing } from '../common/ProfileWithStatusRing';
 import { EmployeeProfileModal } from './EmployeeProfileModal';
-import { EmployeeCard } from './EmployeeCard';
 import { getEmployerOwnStatus, getBatchEmployeeStatusForEmployer } from '../../lib/statusRingHelper';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
-import { EmployerHomeSkeletonLoader } from '../common/SkeletonLoader';
 
 interface EmployerHomeProps {
   onReferFriend: () => void;
@@ -17,7 +15,7 @@ interface EmployerHomeProps {
 }
 
 export function EmployerHome({ onReferFriend, onMessages }: EmployerHomeProps) {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [showQRCode, setShowQRCode] = useState(false);
   const [showQROptions, setShowQROptions] = useState(false);
@@ -27,11 +25,9 @@ export function EmployerHome({ onReferFriend, onMessages }: EmployerHomeProps) {
   const [showPartTimeConfig, setShowPartTimeConfig] = useState(false);
   const [partTimeConfig, setPartTimeConfig] = useState({ workingHoursPerDay: 8, workingDaysPerMonth: 22 });
   const [showEmployeeSelection, setShowEmployeeSelection] = useState(false);
-  const [selectedQREmployee, setSelectedQREmployee] = useState<Employee | null>(null);
   const [showEmployeeModal, setShowEmployeeModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [qrCodeValue, setQrCodeValue] = useState('');
-  const [currentTransactionId, setCurrentTransactionId] = useState<string | null>(null);
   const currentTransactionIdRef = useRef<string | null>(null);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [employerStatus, setEmployerStatus] = useState<{showRing: boolean; color: string; text: string}>({ showRing: false, color: '', text: '' });
@@ -94,7 +90,6 @@ export function EmployerHome({ onReferFriend, onMessages }: EmployerHomeProps) {
           if (payload.new.status === 'completed' && payload.new.id === currentTransactionIdRef.current) {
             setShowQRCode(false);
             setQrCodeValue('');
-            setCurrentTransactionId(null);
             currentTransactionIdRef.current = null;
             alert('Transaction completed successfully!');
             fetchEmployees();
@@ -156,7 +151,7 @@ export function EmployerHome({ onReferFriend, onMessages }: EmployerHomeProps) {
       return;
     }
 
-    const formattedEmployees = data.map(emp => ({
+    const formattedEmployees = (data || []).map((emp: any) => ({
       id: emp.id,
       user_id: emp.user_id,
       employer_id: emp.employer_id,
@@ -209,7 +204,7 @@ export function EmployerHome({ onReferFriend, onMessages }: EmployerHomeProps) {
           schema: 'public',
           table: 'profiles'
         },
-        (payload) => {
+        (payload: any) => {
           const affectedEmployee = employees.find(emp => emp.user_id === payload.new?.id);
           if (affectedEmployee) {
             fetchEmployees();
@@ -379,7 +374,6 @@ export function EmployerHome({ onReferFriend, onMessages }: EmployerHomeProps) {
   };
 
   const handleEmployeeSelected = (employee: Employee) => {
-    setSelectedQREmployee(employee);
     setShowEmployeeSelection(false);
     createQRTransaction(qrTransactionType as 'pay_wages' | 'settle_loan' | 'mark_attendance', employee.id);
   };
@@ -402,16 +396,15 @@ export function EmployerHome({ onReferFriend, onMessages }: EmployerHomeProps) {
       .single();
 
     if (!error && data) {
-      setCurrentTransactionId(data.id);
       currentTransactionIdRef.current = data.id;
       setQrCodeValue(qrCode);
       setShowQRCode(true);
-    } else {
+    } else if (error) {
       alert('Error generating QR code: ' + error.message);
     }
   };
 
-  const createQRTransaction = async (type: 'pay_wages', employeeId: string) => {
+  const createQRTransaction = async (type: 'pay_wages' | 'settle_loan' | 'mark_attendance', employeeId: string) => {
     if (!user) return;
 
     const qrCode = `qr:${type}:${user.id}:${employeeId}:${Date.now()}`;
@@ -429,11 +422,10 @@ export function EmployerHome({ onReferFriend, onMessages }: EmployerHomeProps) {
       .single();
 
     if (!error && data) {
-      setCurrentTransactionId(data.id);
       currentTransactionIdRef.current = data.id;
       setQrCodeValue(qrCode);
       setShowQRCode(true);
-    } else {
+    } else if (error) {
       alert('Error generating QR code: ' + error.message);
     }
   };
@@ -463,22 +455,6 @@ export function EmployerHome({ onReferFriend, onMessages }: EmployerHomeProps) {
     );
   };
 
-  // Show skeleton loader only on first load
-  if (isLoading && !initialLoadComplete) {
-    return (
-      <div className="min-h-screen bg-white">
-        <Header
-          onReferFriend={onReferFriend}
-          onMessages={onMessages}
-          unreadCount={unreadMessages}
-        />
-        <div className="max-w-md mx-auto bg-white" style={{ paddingTop: 'calc(75px + env(safe-area-inset-top))', minHeight: '100vh' }}>
-          <EmployerHomeSkeletonLoader />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white">
       <Header
@@ -487,7 +463,17 @@ export function EmployerHome({ onReferFriend, onMessages }: EmployerHomeProps) {
         unreadCount={unreadMessages}
       />
 
-      <div className="max-w-md mx-auto bg-white pb-24 overflow-y-auto" style={{ paddingTop: 'calc(75px + env(safe-area-inset-top))', minHeight: '100vh' }}>
+      {/* Loading Overlay with Blur Effect */}
+      {isLoading && !initialLoadComplete && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-white/80 backdrop-blur-sm" style={{ paddingTop: 'calc(67px + env(safe-area-inset-top))' }}>
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-gray-600 font-medium">Loading...</p>
+          </div>
+        </div>
+      )}
+
+      <div className={`max-w-md mx-auto bg-white pb-24 overflow-y-auto transition-all duration-300 ${isLoading && !initialLoadComplete ? 'blur-sm' : 'blur-0'}`} style={{ paddingTop: 'calc(67px + env(safe-area-inset-top))', minHeight: '100vh' }}>
         {/* Profile Header */}
         <div className="bg-blue-600 text-white px-4 py-6 relative overflow-hidden bg-cover bg-center shadow-lg -mt-[calc(env(safe-area-inset-top))]" style={{ backgroundImage: 'url(/waves 4.png)', paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}>
           <div className="relative z-10">
@@ -647,7 +633,6 @@ export function EmployerHome({ onReferFriend, onMessages }: EmployerHomeProps) {
               <button
                 onClick={() => {
                   setShowEmployeeSelection(false);
-                  setSelectedQREmployee(null);
                 }}
                 className="w-full mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 px-4 rounded-lg font-medium transition-colors"
               >

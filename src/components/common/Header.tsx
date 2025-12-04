@@ -21,10 +21,10 @@ export function Header({ onReferFriend, onMessages, unreadCount = 0 }: HeaderPro
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-blue-600 z-50 shadow-lg animate-slideDown" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <header className="fixed left-0 right-0 bg-blue-600 z-50 shadow-lg animate-slideDown" style={{ top: '-8px', paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="max-w-md mx-auto h-[75px] px-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <img src="/logo kuki copy copy copy copy.png" alt="KUKI" className="w-10 h-10 object-contain" />
+          <img src="/logo kuki copy copy copy copy.png" alt="KUKI" className="w-10 h-10 object-contain -mt-2" />
           <h1 className="text-xl font-bold text-white">KUKI</h1>
         </div>
 
