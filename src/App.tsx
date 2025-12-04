@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { OnboardingProvider } from './contexts/OnboardingContext';
 import { LoginPage } from './components/auth/LoginPage';
 import { SignupPage } from './components/auth/SignupPage';
 import { EmployerHome } from './components/employer/EmployerHome';
@@ -19,6 +20,7 @@ import { ProfessionSelectionPage } from './components/pages/ProfessionSelectionP
 import { ProfilePhotoUploadPage } from './components/pages/ProfilePhotoUploadPage';
 import { ReferFriendModal } from './components/common/ReferFriendModal';
 import { OrientationLock } from './components/common/OrientationLock';
+import { OnboardingGuide } from './components/common/OnboardingGuide';
 import { AdminDashboard } from './components/pages/AdminDashboard';
 import { DesktopEmployerLogin } from './components/pages/DesktopEmployerLogin';
 import { DesktopEmployerPage } from './components/pages/DesktopEmployerPage';
@@ -33,6 +35,7 @@ function AppContent() {
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [desktopLoginSuccess, setDesktopLoginSuccess] = useState(false);
+  const [showTransitionBlur, setShowTransitionBlur] = useState(false);
 
   useEffect(() => {
     const checkDevice = () => {
@@ -105,7 +108,7 @@ function AppContent() {
   // Mobile mode - Full functionality
   if (!user) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen relative">
         {authMode === 'login' ? (
           <LoginPage
             onSwitchToSignup={() => {
@@ -113,15 +116,28 @@ function AppContent() {
               setShowSignupSuccess(false);
             }}
             showSuccess={showSignupSuccess}
+            onMounted={() => {
+              setTimeout(() => setShowTransitionBlur(false), 100);
+            }}
           />
         ) : (
           <SignupPage
             onSwitchToLogin={(showSuccess = false) => {
-              setAuthMode('login');
-              setShowSignupSuccess(showSuccess);
+              setShowTransitionBlur(true);
+              setTimeout(() => {
+                setAuthMode('login');
+                setShowSignupSuccess(showSuccess);
+              }, 100);
             }}
           />
         )}
+
+        {/* Transition blur overlay */}
+        <div
+          className={`fixed inset-0 bg-white/50 backdrop-blur-lg pointer-events-none transition-opacity duration-500 z-50 ${
+            showTransitionBlur ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
       </div>
     );
   }
@@ -186,6 +202,9 @@ function AppContent() {
 
         {/* Refer Friend Modal */}
         {showReferModal && <ReferFriendModal onClose={() => setShowReferModal(false)} />}
+
+        {/* Onboarding Guide */}
+        <OnboardingGuide />
       </div>
     </OrientationLock>
   );
@@ -195,7 +214,9 @@ function App() {
   return (
     <AuthProvider>
       <LanguageProvider>
-        <AppContent />
+        <OnboardingProvider>
+          <AppContent />
+        </OnboardingProvider>
       </LanguageProvider>
     </AuthProvider>
   );

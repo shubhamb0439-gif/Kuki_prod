@@ -125,17 +125,30 @@ export function SignupPage({ onSwitchToLogin }: SignupPageProps) {
         throw new Error('Failed to create profile');
       }
 
-      supabase.auth.signOut({ scope: 'local' });
-      onSwitchToLogin(true);
+      console.log('Account created successfully, signing out and showing success modal');
+
+      await supabase.auth.signOut({ scope: 'local' });
       setLoading(false);
+
+      onSwitchToLogin(true);
     } catch (err: any) {
-      setError(err.message);
+      console.error('Signup error:', err);
+      setError(err.message || 'An error occurred during signup');
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-emerald-50 flex items-center justify-center p-4 animate-fadeIn">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-emerald-50 flex items-center justify-center p-4 animate-fadeIn relative">
+      {loading && !error && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 flex flex-col items-center">
+            <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
+            <p className="text-gray-700 font-medium">Creating your account...</p>
+          </div>
+        </div>
+      )}
+
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">

@@ -8,9 +8,10 @@ import { supabase } from '../../lib/supabase';
 interface LoginPageProps {
   onSwitchToSignup: () => void;
   showSuccess?: boolean;
+  onMounted?: () => void;
 }
 
-export function LoginPage({ onSwitchToSignup, showSuccess = false }: LoginPageProps) {
+export function LoginPage({ onSwitchToSignup, showSuccess = false, onMounted }: LoginPageProps) {
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +20,12 @@ export function LoginPage({ onSwitchToSignup, showSuccess = false }: LoginPagePr
   const [displaySuccess, setDisplaySuccess] = useState(showSuccess);
   const { signIn } = useAuth();
   const { t } = useLanguage();
+
+  useEffect(() => {
+    if (onMounted) {
+      onMounted();
+    }
+  }, [onMounted]);
 
   useEffect(() => {
     if (showSuccess) {
