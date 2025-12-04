@@ -3,7 +3,7 @@ export interface User {
   email?: string;
   phone?: string;
   name: string;
-  role: 'employer' | 'employee';
+  role: 'employer' | 'employee' | 'admin';
   profile_photo?: string;
   profession?: string;
   job_status?: 'looking_for_job' | 'working' | 'looking_for_helper' | 'personal';

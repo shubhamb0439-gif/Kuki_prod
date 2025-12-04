@@ -77,7 +77,7 @@ export function BottomNavigation({ currentPage, onNavigate }: BottomNavigationPr
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-blue-600 px-4 pb-safe z-50 shadow-2xl animate-slideUp">
       <div className="max-w-md mx-auto">
-        <div className="flex items-end justify-around py-4">
+        <div className="flex items-center justify-around py-4">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id;
@@ -104,7 +104,7 @@ export function BottomNavigation({ currentPage, onNavigate }: BottomNavigationPr
               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
-                className={`flex flex-col items-center transition-all duration-200 transform hover:scale-110 active:scale-95 ${isActive ? 'text-white' : 'text-white/70'}`}
+                className={`flex flex-col items-center justify-center transition-all duration-200 transform hover:scale-110 active:scale-95 ${isActive ? 'text-white' : 'text-white/70'}`}
               >
                 <Icon className={`w-7 h-7 transition-all duration-200 ${isActive ? 'drop-shadow-lg' : ''}`} />
                 {isActive && (
